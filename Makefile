@@ -1,2 +1,17 @@
-all: empty-module.c
-	gcc -shared empty-module.c -o empty-module.so
+CC      = gcc
+LD      = gcc
+CFLAGS  = -ggdb3 -Wall
+LDFLAGS =
+
+all: empty-module.so
+
+# make shared library out of the object file
+%.so: %.o
+	$(LD) -shared $(LDFLAGS) -o $@ $<
+
+# compile source file to object file
+%.o: %.c
+	$(CC) $(CFLAGS) -fPIC -c $<
+
+clean:
+	rm -f *.so *.o *.dylib *.dll
