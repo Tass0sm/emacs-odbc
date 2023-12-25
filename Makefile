@@ -6,8 +6,8 @@ LDFLAGS =
 all: empty-module.so
 
 # make shared library out of the object file
-%.so: %.o
-	$(LD) -shared $(LDFLAGS) -o $@ $<
+%.so: empty-module.o utils.o
+	$(LD) -shared $(LDFLAGS) -o $@ $^
 
 # compile source file to object file
 %.o: %.c
