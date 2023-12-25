@@ -3,10 +3,10 @@ LD      = gcc
 CFLAGS  = -ggdb3 -Wall
 LDFLAGS =
 
-all: empty-module.so
+all: emacs-odbc.so
 
 # make shared library out of the object file
-%.so: empty-module.o utils.o
+%.so: emacs-odbc.o utils.o
 	$(LD) -shared $(LDFLAGS) -o $@ $^
 
 # compile source file to object file

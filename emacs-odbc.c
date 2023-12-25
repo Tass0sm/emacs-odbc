@@ -1,8 +1,8 @@
-#include "empty-module.h"
+#include "emacs-odbc.h"
 
 int emacs_module_init (struct emacs_runtime *runtime) {
   emacs_env *env = runtime->get_environment(runtime);
 
-  provide(env, "empty-module");
+  provide(env, "emacs-odbc");
   return 0;
 }
