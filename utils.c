@@ -23,6 +23,10 @@ emacs_value funcall(emacs_env *env, const char* fn, ptrdiff_t nargs, ...) {
   return val;
 }
 
+emacs_value cons(emacs_env *env, emacs_value x, emacs_value y) {
+  return funcall(env, "cons", 2, x, y);
+}
+
 void define_function(emacs_env *env, const char *name,
                      ptrdiff_t min_arity, ptrdiff_t max_arity,
                      emacs_value (*function) (emacs_env *env,
