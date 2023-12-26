@@ -1,7 +1,7 @@
 CC      = gcc
 LD      = gcc
 CFLAGS  = -ggdb3 -Wall
-LDFLAGS =
+LDFLAGS = -lodbc
 
 all: emacs-odbc.so
 
