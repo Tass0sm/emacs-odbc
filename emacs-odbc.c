@@ -5,14 +5,19 @@ emacs_value odbc_alloc_env(emacs_env *env,
                            ptrdiff_t nargs,
                            emacs_value args[],
                            void *data) EMACS_NOEXCEPT {
+  SQLRETURN ret;
   SQLHENV *sql_env_p;
 
   sql_env_p = malloc(sizeof(SQLHENV));
-  SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, sql_env_p);
-  SQLSetEnvAttr(*sql_env_p, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+  ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, sql_env_p);
 
-  emacs_value res = env->make_user_ptr(env, NULL, (void *) sql_env_p);
-  return res;
+  if (SQL_SUCCEEDED(ret)) {
+    SQLSetEnvAttr(*sql_env_p, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+    emacs_value res = env->make_user_ptr(env, NULL, (void *) sql_env_p);
+    return res;
+  } else {
+    return env->make_integer(env, ret);
+  }
 }
 
 
@@ -24,16 +29,21 @@ emacs_value odbc_alloc_dbc(emacs_env *env,
                            ptrdiff_t nargs,
                            emacs_value args[],
                            void *data) EMACS_NOEXCEPT {
+  SQLRETURN ret;
   SQLHENV sql_env;
   SQLHDBC *dbc_p;
 
   sql_env = *((SQLHENV *) env->get_user_ptr(env, args[0]));
 
   dbc_p = malloc(sizeof(SQLHDBC));
-  SQLAllocHandle(SQL_HANDLE_DBC, sql_env, dbc_p);
+  ret = SQLAllocHandle(SQL_HANDLE_DBC, sql_env, dbc_p);
 
-  emacs_value res = env->make_user_ptr(env, NULL, (void *) dbc_p);
-  return res;
+  if (SQL_SUCCEEDED(ret)) {
+    emacs_value res = env->make_user_ptr(env, NULL, (void *) dbc_p);
+    return res;
+  } else {
+    return env->make_integer(env, ret);
+  }
 }
 
 const char* odbc_alloc_dbc_doc =
@@ -167,7 +177,6 @@ emacs_value odbc_connect(emacs_env *env,
       printf("Driver reported the following diagnostics\n");
       extract_error("SQLDriverConnect", dbc, SQL_HANDLE_DBC);
     }
-    SQLDisconnect(dbc);               /* disconnect from driver */
   } else {
     fprintf(stderr, "Failed to connect\n");
     extract_error("SQLDriverConnect", dbc, SQL_HANDLE_DBC);
@@ -185,16 +194,21 @@ emacs_value odbc_alloc_stmt(emacs_env *env,
                             ptrdiff_t nargs,
                             emacs_value args[],
                             void *data) EMACS_NOEXCEPT {
-  SQLHSTMT *stmt_p;
+  SQLRETURN ret;
   SQLHDBC dbc;
+  SQLHSTMT *stmt_p;
 
   dbc = *((SQLHDBC *) env->get_user_ptr(env, args[0]));
 
   stmt_p = malloc(sizeof(SQLHSTMT));
-  SQLAllocHandle(SQL_HANDLE_STMT, dbc, stmt_p);
+  ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, stmt_p);
 
-  emacs_value res = env->make_user_ptr(env, NULL, (void *) stmt_p);
-  return res;
+  if (SQL_SUCCEEDED(ret)) {
+    emacs_value res = env->make_user_ptr(env, NULL, (void *) stmt_p);
+    return res;
+  } else {
+    return env->make_integer(env, ret);
+  }
 }
 
 
@@ -206,10 +220,12 @@ emacs_value odbc_tables(emacs_env *env,
                         ptrdiff_t nargs,
                         emacs_value args[],
                         void *data) EMACS_NOEXCEPT {
+  SQLHSTMT *stmt_p;
   SQLHSTMT stmt_handle;
   SQLRETURN ret;
 
-  stmt_handle = *((SQLHSTMT *) env->get_user_ptr(env, args[0]));
+  stmt_p = (SQLHSTMT *) env->get_user_ptr(env, args[0]);
+  stmt_handle = *stmt_p;
 
   ret = SQLTables(stmt_handle,
                   NULL, 0,  /* no specific catalog */
