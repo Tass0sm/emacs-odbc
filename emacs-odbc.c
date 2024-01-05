@@ -1,5 +1,6 @@
 #include "emacs-odbc.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 emacs_value odbc_alloc_env(emacs_env *env,
                            ptrdiff_t nargs,
@@ -163,11 +164,19 @@ emacs_value odbc_connect(emacs_env *env,
   SQLRETURN ret; /* ODBC API return status */
   SQLCHAR outstr[1024];
   SQLSMALLINT outstrlen;
+  bool string_ret;
+  char connection_string[256];
+  ptrdiff_t size = 256;
 
   dbc = *((SQLHDBC *) env->get_user_ptr(env, args[0]));
 
+  string_ret = env->copy_string_contents(env, args[1], connection_string, &size);
+  if (!string_ret) {
+    return nil(env);
+  }
+
   /* Connect to the DSN mydsn */
-  ret = SQLDriverConnect(dbc, NULL, (SQLCHAR *) "DSN=MariaDBTest; UID=tassos; PWD=123", SQL_NTS,
+  ret = SQLDriverConnect(dbc, NULL, (SQLCHAR *) connection_string, SQL_NTS,
                          outstr, sizeof(outstr), &outstrlen,
                          SQL_DRIVER_COMPLETE);
   if (SQL_SUCCEEDED(ret)) {
@@ -293,7 +302,7 @@ int emacs_module_init (struct emacs_runtime *runtime) {
   define_function(env, "odbc-tables", 1, 1, &odbc_tables, odbc_tables_doc);
   define_function(env, "odbc-fetch-results", 1, 1, &odbc_fetch_results, odbc_fetch_results_doc);
 
-  define_function(env, "odbc-connect", 1, 1, &odbc_connect, odbc_connect_doc);
+  define_function(env, "odbc-connect", 2, 2, &odbc_connect, odbc_connect_doc);
 
   provide(env, "emacs-odbc");
   return 0;
