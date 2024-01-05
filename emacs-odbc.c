@@ -250,6 +250,35 @@ const char* odbc_tables_doc =
   "Query for tables through ODBC statement handle.\n";
 
 
+emacs_value odbc_exec_direct(emacs_env *env,
+                             ptrdiff_t nargs,
+                             emacs_value args[],
+                             void *data) EMACS_NOEXCEPT {
+  SQLHSTMT *stmt_p;
+  SQLHSTMT stmt_handle;
+  SQLRETURN ret;
+  bool string_ret;
+  char statement[256];
+  ptrdiff_t size = 256;
+
+  stmt_p = (SQLHSTMT *) env->get_user_ptr(env, args[0]);
+  stmt_handle = *stmt_p;
+
+  string_ret = env->copy_string_contents(env, args[1], statement, &size);
+  if (!string_ret) {
+    return nil(env);
+  }
+
+  ret = SQLExecDirect(stmt_handle, (SQLCHAR *) statement, SQL_NTS);
+
+  return env->make_integer(env, ret);
+}
+
+
+const char* odbc_exec_direct_doc =
+  "Execute statement directly.\n";
+
+
 emacs_value odbc_fetch_results(emacs_env *env,
                                ptrdiff_t nargs,
                                emacs_value args[],
@@ -303,6 +332,8 @@ int emacs_module_init (struct emacs_runtime *runtime) {
   define_function(env, "odbc-fetch-results", 1, 1, &odbc_fetch_results, odbc_fetch_results_doc);
 
   define_function(env, "odbc-connect", 2, 2, &odbc_connect, odbc_connect_doc);
+
+  define_function(env, "odbc-exec-direct", 2, 2, &odbc_exec_direct, odbc_exec_direct_doc);
 
   provide(env, "emacs-odbc");
   return 0;
