@@ -1,4 +1,4 @@
-#include "emacs-odbc.h"
+#include "emacs-odbc-module.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -335,6 +335,6 @@ int emacs_module_init (struct emacs_runtime *runtime) {
 
   define_function(env, "odbc-exec-direct", 2, 2, &odbc_exec_direct, odbc_exec_direct_doc);
 
-  provide(env, "emacs-odbc");
+  provide(env, "emacs-odbc-module");
   return 0;
 }
