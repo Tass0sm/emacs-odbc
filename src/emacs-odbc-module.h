@@ -1,6 +1,4 @@
 #include <emacs-module.h>
-int plugin_is_GPL_compatible;
-
 #include "utils.h"
 
 #include <assert.h>
@@ -12,6 +10,14 @@ int plugin_is_GPL_compatible;
 #include <sql.h>
 #include <sqlext.h>
 
+#if __GNUC__ >= 4
+#define EXPORT __attribute__((visibility("default")))
+#else
+#define EXPORT
+#endif
+
+EXPORT int plugin_is_GPL_compatible;
+
 emacs_value odbc_drivers(emacs_env *env, ptrdiff_t nargs, emacs_value args[], void *data) EMACS_NOEXCEPT;
 emacs_value odbc_data_sources(emacs_env *env, ptrdiff_t nargs, emacs_value args[], void *data) EMACS_NOEXCEPT;
-int emacs_module_init(struct emacs_runtime *runtime);
+EXPORT int emacs_module_init(struct emacs_runtime *runtime);
